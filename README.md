@@ -6,6 +6,8 @@ A lightweight Windows overlay that monitors Claude Code token usage and cost in 
 
 Built to expand beyond Claude Code (OpenAI-compatible CLIs, Derivity S0/CLI, provider stacks, MCP tools).
 
+V0.10 is experimental: When Claude Code emits provider-reported cost, AI Runtime Meter uses that value. When reported cost is unavailable, it falls back to model-aware token pricing as per Anthropic's pricing tables. Estimated cost may differ from billing due to cache TTL, regional modifiers, batching, provider-side adjustments, or non-token charges.
+
 ## Download
 
 [**Download the latest release**](https://github.com/r00ten/ai-runtime-meter/releases/latest) — single self-contained `.exe`, Windows x64, no .NET install required. Unzip and run.
