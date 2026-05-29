@@ -1,0 +1,21 @@
+{
+  "resourceLogs": [
+    {
+      "resource": { "attributes": [] },
+      "scopeLogs": [
+        {
+          "scope": { "name": "com.anthropic.claude_code" },
+          "logRecords": [
+            {
+              "body": { "stringValue": "claude_code.user_prompt" },
+              "attributes": [
+                { "key": "event.name", "value": { "stringValue": "claude_code.user_prompt" } },
+                { "key": "prompt_length", "value": { "stringValue": "42" } }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

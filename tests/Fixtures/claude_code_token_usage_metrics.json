@@ -1,0 +1,52 @@
+{
+  "resourceMetrics": [
+    {
+      "resource": {
+        "attributes": [
+          { "key": "service.name", "value": { "stringValue": "claude-code" } }
+        ]
+      },
+      "scopeMetrics": [
+        {
+          "scope": { "name": "com.anthropic.claude_code" },
+          "metrics": [
+            {
+              "name": "claude_code.token.usage",
+              "sum": {
+                "isMonotonic": true,
+                "aggregationTemporality": 2,
+                "dataPoints": [
+                  {
+                    "asInt": "3000",
+                    "attributes": [
+                      { "key": "type", "value": { "stringValue": "input" } },
+                      { "key": "model", "value": { "stringValue": "claude-sonnet-4-6" } }
+                    ]
+                  },
+                  {
+                    "asInt": "900",
+                    "attributes": [
+                      { "key": "type", "value": { "stringValue": "output" } }
+                    ]
+                  },
+                  {
+                    "asInt": "24000",
+                    "attributes": [
+                      { "key": "type", "value": { "stringValue": "cacheRead" } }
+                    ]
+                  },
+                  {
+                    "asInt": "420",
+                    "attributes": [
+                      { "key": "type", "value": { "stringValue": "cacheCreation" } }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
