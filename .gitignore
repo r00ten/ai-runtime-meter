@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+**/publish/
+**/publish-single/
+*.zip
+
+*.user
+.vs/
+.idea/
+.DS_Store
+
+.claude/
+*.log

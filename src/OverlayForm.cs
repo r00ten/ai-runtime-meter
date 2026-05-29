@@ -173,18 +173,22 @@ public class OverlayForm : Form
             _                      => Color.FromArgb(140, 200, 140)
         };
 
-        string agentLabel = m.Source.ToString().ToLower().Replace("claudecode", "claude·");
+        string costShort = RuntimeCost.FormatUsdShort(m.EstimatedCostUsd, m.CostIsReported);
+        string costLine  = RuntimeCost.FormatUsd(m.EstimatedCostUsd, m.CostIsReported);
+        var row = ModelPricingCatalog.Resolve(m.Model);
+        string estBreakdown = m.CostIsReported ? "" :
+            $"\n  (est. {row.Family}: in×${row.InputPerMTok} wr×${row.CacheWrite5mPerMTok} rd×${row.CacheReadPerMTok} out×${row.OutputPerMTok}/M)";
+
         _compactText = derived.PressureLevel switch
         {
-            PressureLevel.Critical => $"CACHE READ {FormatK(m.CacheReadInputTokens)} — CRITICAL",
-            PressureLevel.Warning  => $"CACHE READ {FormatK(m.CacheReadInputTokens)} — WARNING",
-            _ => $"{agentLabel} · cache {FormatK(m.CacheReadInputTokens)} · out {FormatK(m.OutputTokens)}"
+            PressureLevel.Critical => $"{costShort} · cache {FormatK(m.CacheReadInputTokens)} · CRIT",
+            PressureLevel.Warning  => $"{costShort} · cache {FormatK(m.CacheReadInputTokens)} · WARN",
+            _ => $"{costShort} · cache {FormatK(m.CacheReadInputTokens)} · out {FormatK(m.OutputTokens)}"
         };
 
         string otelLine = _otelRunning ? $"otel: 127.0.0.1:{_otelPort}" : "otel: offline";
         string mcpLine  = _mcpPort > 0 ? $"mcp:  127.0.0.1:{_mcpPort}"  : "mcp:  offline";
         string failLine = _store.LastOtelParseFailure is not null ? "otel: protobuf — use http/json" : "";
-        string cost     = m.EstimatedCostUsd.HasValue ? $"${m.EstimatedCostUsd:F4}" : "—";
 
         _expandedText =
             $"provider:    {m.Provider.ToString().ToLower()}\n" +
@@ -194,10 +198,11 @@ public class OverlayForm : Form
             $"input:       {FormatK(m.InputTokens)}\n" +
             $"cache write: {FormatK(m.CacheCreationInputTokens)}\n" +
             $"cache read:  {FormatK(m.CacheReadInputTokens)}\n" +
+            $"tokens in:   {FormatK(m.TotalInputSideTokens)}\n" +
             $"output:      {FormatK(m.OutputTokens)}\n" +
             $"────────────────────\n" +
-            $"cost:        {cost}\n" +
-            $"status:      {RuntimeDerivedMetric.ComputePressure(m, _settings).ToString().ToLower()}\n" +
+            $"cost:        {costLine}{estBreakdown}\n" +
+            $"status:      {RuntimeDerivedMetric.ComputePressure(m, _settings).ToString().ToLower()} (cache volume)\n" +
             $"source:      {m.Source.ToString().ToLower()}\n" +
             $"────────────────────\n" +
             $"{otelLine}\n" +
@@ -223,12 +228,19 @@ public class OverlayForm : Form
             var s = kv.Value;
             var label = Trunc(s.SessionId ?? s.ProjectPath ?? s.SessionKey, 22);
             sb.AppendLine($"session: {label}");
+            if (!string.IsNullOrEmpty(s.LastModel)) sb.AppendLine($"model:    {Trunc(s.LastModel, 22)}");
             sb.AppendLine($"requests: {s.Requests}");
             sb.AppendLine($"input:    {FormatK(s.InputTokens)}");
             sb.AppendLine($"cache wr: {FormatK(s.CacheCreationInputTokens)}");
             sb.AppendLine($"cache rd: {FormatK(s.CacheReadInputTokens)}");
+            sb.AppendLine($"tokens in:{FormatK(s.InputTokens + s.CacheCreationInputTokens + s.CacheReadInputTokens)}");
             sb.AppendLine($"output:   {FormatK(s.OutputTokens)}");
-            sb.AppendLine($"cost:     ${s.EstimatedCostUsd:F4}");
+            if (s.CostReportedUsd > 0 && s.CostEstimatedUsd > 0)
+                sb.AppendLine($"cost:     ${s.EstimatedCostUsd:F2} (${s.CostReportedUsd:F2} rep + ${s.CostEstimatedUsd:F2} est)");
+            else if (s.CostReportedUsd > 0)
+                sb.AppendLine($"cost:     ${s.CostReportedUsd:F2} (reported)");
+            else
+                sb.AppendLine($"cost:     ${s.EstimatedCostUsd:F2} (est.)");
             sb.AppendLine($"────────────────────");
         }
         _sessionText = sb.ToString().TrimEnd();

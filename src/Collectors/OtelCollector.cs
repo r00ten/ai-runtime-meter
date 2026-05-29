@@ -246,20 +246,31 @@ public class OtelCollector : IDisposable
     private static RuntimeUsageMetric NewMetric(
         TokenTotals t,
         Dictionary<string, string> attrs,
-        Dictionary<string, string> resourceAttrs) => new()
+        Dictionary<string, string> resourceAttrs)
     {
-        Provider = RuntimeProvider.Anthropic,
-        Source = RuntimeSource.ClaudeCodeOtel,
-        Model = StrFrom(attrs, resourceAttrs, "gen_ai.response.model", "llm.model", "model"),
-        SessionId = StrFrom(attrs, resourceAttrs, "claude.session_id", "session.id", "session_id", "sessionId"),
-        RequestId = StrFrom(attrs, resourceAttrs, "gen_ai.request.id", "request.id", "request_id", "requestId"),
-        ProjectPath = StrFrom(attrs, resourceAttrs, "process.cwd", "cwd", "project.path", "project_path"),
-        InputTokens = t.Input,
-        CacheCreationInputTokens = t.CacheCreation,
-        CacheReadInputTokens = t.CacheRead,
-        OutputTokens = t.Output,
-        Timestamp = DateTime.UtcNow.ToString("o")
-    };
+        var metric = new RuntimeUsageMetric
+        {
+            Provider = RuntimeProvider.Anthropic,
+            Source = RuntimeSource.ClaudeCodeOtel,
+            Model = StrFrom(attrs, resourceAttrs, "gen_ai.response.model", "llm.model", "model"),
+            SessionId = StrFrom(attrs, resourceAttrs, "claude.session_id", "session.id", "session_id", "sessionId"),
+            RequestId = StrFrom(attrs, resourceAttrs, "gen_ai.request.id", "request.id", "request_id", "requestId"),
+            ProjectPath = StrFrom(attrs, resourceAttrs, "process.cwd", "cwd", "project.path", "project_path"),
+            InputTokens = t.Input,
+            CacheCreationInputTokens = t.CacheCreation,
+            CacheReadInputTokens = t.CacheRead,
+            OutputTokens = t.Output,
+            Timestamp = DateTime.UtcNow.ToString("o")
+        };
+
+        if (RuntimeCost.TryParseReportedUsd(attrs, out var reported))
+        {
+            metric.EstimatedCostUsd = reported;
+            metric.CostIsReported = true;
+        }
+
+        return metric;
+    }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 

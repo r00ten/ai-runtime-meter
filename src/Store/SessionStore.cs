@@ -14,6 +14,9 @@ public class SessionSummary
     public long CacheReadInputTokens { get; set; }
     public long OutputTokens { get; set; }
     public double EstimatedCostUsd { get; set; }
+    public double CostReportedUsd { get; set; }
+    public double CostEstimatedUsd { get; set; }
+    public string? LastModel { get; set; }
     public PressureLevel PressureLevel { get; set; }
     public string LastSeen { get; set; } = DateTime.UtcNow.ToString("o");
 }
@@ -50,7 +53,11 @@ public class SessionStore
         s.CacheCreationInputTokens += m.CacheCreationInputTokens;
         s.CacheReadInputTokens += m.CacheReadInputTokens;
         s.OutputTokens += m.OutputTokens;
-        s.EstimatedCostUsd += m.EstimatedCostUsd ?? 0;
+        var turnCost = m.EstimatedCostUsd ?? 0;
+        if (m.CostIsReported) s.CostReportedUsd += turnCost;
+        else s.CostEstimatedUsd += turnCost;
+        s.EstimatedCostUsd = s.CostReportedUsd + s.CostEstimatedUsd;
+        if (!string.IsNullOrEmpty(m.Model)) s.LastModel = m.Model;
         s.LastSeen = m.Timestamp;
 
         // session-level pressure uses session cost thresholds

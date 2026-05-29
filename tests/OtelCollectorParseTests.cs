@@ -23,6 +23,32 @@ public class OtelCollectorParseTests
         Assert.Equal(420, m.CacheCreationInputTokens);
         Assert.Equal("claude-sonnet-4-6", m.Model);
         Assert.Equal("sess-123", m.SessionId);
+        Assert.True(m.CostIsReported);
+        Assert.Equal(0.0123, m.EstimatedCostUsd!.Value, 4);
+    }
+
+    [Fact]
+    public void Reported_cost_usd_is_used_not_replaced_by_estimate()
+    {
+        const string body = """
+        {
+          "resourceLogs": [{
+            "resource": { "attributes": [] },
+            "scopeLogs": [{ "logRecords": [{
+              "attributes": [
+                { "key": "model", "value": { "stringValue": "claude-opus-4-7" } },
+                { "key": "input_tokens", "value": { "stringValue": "1000" } },
+                { "key": "output_tokens", "value": { "stringValue": "100" } },
+                { "key": "cost_usd", "value": { "stringValue": "2.47" } }
+              ]
+            }]}]
+          }]
+        }
+        """;
+
+        var m = Assert.Single(OtelCollector.ParseLogPayload(body));
+        Assert.True(m.CostIsReported);
+        Assert.Equal(2.47, m.EstimatedCostUsd!.Value, 3);
     }
 
     [Fact]

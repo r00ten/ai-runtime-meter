@@ -34,8 +34,8 @@ public class RuntimeStore
         _settings ??= settings;
         Sessions ??= new SessionStore(settings);
 
-        if (metric.EstimatedCostUsd is null or 0)
-            metric.EstimatedCostUsd = settings.Pricing.Estimate(metric);
+        if (!metric.CostIsReported || metric.EstimatedCostUsd is null or <= 0)
+            ModelPricingCatalog.ApplyCost(metric);
 
         LastRequest = Current;
         Current = metric;

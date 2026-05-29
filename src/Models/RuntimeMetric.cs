@@ -32,6 +32,9 @@ public class RuntimeUsageMetric
 
     public double? EstimatedCostUsd { get; set; }
 
+    /// <summary>True when cost came from OTEL/API (e.g. cost_usd), not token×table estimate.</summary>
+    public bool CostIsReported { get; set; }
+
     public int? ToolCallCount { get; set; }
     public List<string>? ToolNames { get; set; }
 
@@ -105,6 +108,7 @@ public class ManualJsonSource
         CacheReadInputTokens = CacheReadInputTokens,
         OutputTokens = OutputTokens,
         EstimatedCostUsd = EstimatedCost,
+        CostIsReported = EstimatedCost is > 0,
         Timestamp = UpdatedAt ?? DateTime.UtcNow.ToString("o")
     };
 }

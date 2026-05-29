@@ -135,11 +135,14 @@ public class McpServer : IDisposable
         return new
         {
             requests = session.Requests,
+            lastModel = session.LastModel,
             inputTokens = session.InputTokens,
             cacheCreationInputTokens = session.CacheCreationInputTokens,
             cacheReadInputTokens = session.CacheReadInputTokens,
             outputTokens = session.OutputTokens,
             estimatedCostUsd = (double?)session.EstimatedCostUsd,
+            costReportedUsd = session.CostReportedUsd,
+            costEstimatedUsd = session.CostEstimatedUsd,
             pressureLevel = session.PressureLevel.ToString().ToLower()
         };
     }

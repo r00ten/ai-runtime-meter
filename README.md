@@ -13,8 +13,9 @@ Built to expand beyond Claude Code (OpenAI-compatible CLIs, Derivity S0/CLI, pro
 ## What it does
 
 - Receives OTLP telemetry from Claude Code (logs + metrics over HTTP/JSON)
-- Displays per-request token usage (input, cache write, cache read, output) and estimated cost
-- Tracks session-level cumulative totals across requests
+- Displays per-request token usage (input, cache write, cache read, output), **tokens in** (input + cache write + cache read), and cost
+- Uses **`cost_usd` from OTEL when present** (reported); otherwise **model-aware estimated** pricing from the built-in Anthropic table
+- Tracks session-level cumulative totals; **reported** and **estimated** cost kept separate in Session view and MCP
 - Exposes a JSON-RPC 2.0 MCP server over TCP so Claude itself can query runtime stats
 - Writes `runtime-status.json` and `claude-code-env.ps1` to `~/.derivity/runtime-meter/` on startup
 
@@ -22,7 +23,7 @@ Built to expand beyond Claude Code (OpenAI-compatible CLIs, Derivity S0/CLI, pro
 
 Borderless always-on-top overlay, bottom-right of screen. 236px wide.
 
-- **Compact bar** (32px): current request cost · cache read · output tokens. Color = pressure level (green/yellow/orange/red). × to exit.
+- **Compact bar** (32px): current request **$** · cache read · output tokens. Color = cache **volume** pressure (not dollar alerts). × to exit.
 - **Expanded panel** (click to toggle): two tabs — **Live** (per-request detail) and **Session** (cumulative totals). Derivity logo at bottom.
 - Opens expanded on launch showing endpoint status. Auto-collapses on first metric received.
 - Drag to reposition. Right-click → Clear data / Exit.
@@ -161,7 +162,9 @@ ai-runtime-meter/                — self-contained tool folder
 │   ├── OverlayForm.cs           — WinForms overlay UI
 │   ├── derivity_logo.png        — embedded brand logo (transparent PNG)
 │   ├── Models/
-│   │   ├── RuntimeMetric.cs     — metric types, pressure logic, pricing
+│   │   ├── RuntimeMetric.cs     — metric types, pressure logic
+│   │   ├── RuntimeCost.cs       — OTEL cost_usd parsing
+│   │   ├── ModelPricingCatalog.cs — Anthropic $/M fallback by model
 │   │   └── MeterSettings.cs     — settings, thresholds, port config
 │   ├── Collectors/
 │   │   ├── OtelCollector.cs     — OTLP HTTP receiver (logs + metrics)
