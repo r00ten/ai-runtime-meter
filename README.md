@@ -4,7 +4,7 @@
 
 A lightweight Windows overlay that monitors Claude Code token usage and cost in real time via OpenTelemetry (OTLP/HTTP) and exposes a local MCP server for in-session querying.
 
-Built to expand beyond Claude Code (OpenAI-compatible CLIs, Derivity S0/CLI, provider stacks, MCP tools). The app surface is branded **Derivity Meter**.
+Built to expand beyond Claude Code (OpenAI-compatible CLIs, Derivity S0/CLI, provider stacks, MCP tools).
 
 ## Download
 
